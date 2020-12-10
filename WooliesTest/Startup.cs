@@ -24,6 +24,8 @@ namespace WooliesTest
 
             services.AddScoped<IDataRepository, DataRepository>();
             services.AddScoped<HttpClient>();
+            services.AddScoped<IShopperHistoryService, ShopperHistoryService>();
+            services.AddScoped<IRecommendedProductsService, RecommendedProductsService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ITrolleyCalculator, TrolleyCalculator>();
             services.AddControllers();

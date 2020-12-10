@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
@@ -7,13 +8,14 @@ using WooliesTest.Models;
 
 namespace WooliesTest.Services
 {
-    public class ExternalTrolleyCalculator : ITrolleyCalculator
+    public class ExternalTrolleyRepository : ITrolleyCalculator
     {
         readonly HttpClient client;
+        private readonly ILogger<ExternalTrolleyRepository> logger;
         readonly string baseUrl;
         readonly string token;
 
-        public ExternalTrolleyCalculator(IConfiguration configuration, HttpClient client)
+        public ExternalTrolleyRepository(IConfiguration configuration, HttpClient client, ILogger<ExternalTrolleyRepository> logger)
         {
             if (configuration == null)
             {
@@ -21,6 +23,7 @@ namespace WooliesTest.Services
             }
 
             this.client = client ?? throw new System.ArgumentNullException(nameof(client));
+            this.logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
 
             baseUrl = configuration["BaseUrl"];
             token = configuration["Token"];
@@ -39,6 +42,10 @@ namespace WooliesTest.Services
             {
                 var text = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<decimal>(text);
+            }
+            else
+            {
+                logger.LogError($"Post to {url} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
             }
 
             return null;

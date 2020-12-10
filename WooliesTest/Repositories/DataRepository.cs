@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,10 +11,11 @@ namespace WooliesTest.Repositories
     public class DataRepository : IDataRepository
     {
         readonly HttpClient client;
+        private readonly ILogger<DataRepository> logger;
         readonly string baseUrl;
         readonly string token;
 
-        public DataRepository(IConfiguration configuration, HttpClient client)
+        public DataRepository(IConfiguration configuration, HttpClient client, ILogger<DataRepository> logger)
         {
             if (configuration == null)
             {
@@ -21,6 +23,7 @@ namespace WooliesTest.Repositories
             }
 
             this.client = client ?? throw new System.ArgumentNullException(nameof(client));
+            this.logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
 
             baseUrl = configuration["BaseUrl"];
             token = configuration["Token"];
@@ -36,6 +39,10 @@ namespace WooliesTest.Repositories
                 var text = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<IEnumerable<Product>>(text);
             }
+            else
+            {
+                logger.LogError($"Get from {productApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
+            }
 
             return null;
         }
@@ -49,6 +56,10 @@ namespace WooliesTest.Repositories
             {
                 var text = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<IEnumerable<ShopperHistory>>(text);
+            }
+            else
+            {
+                logger.LogError($"Get from {shopperHistoryApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
             }
 
             return null; ;

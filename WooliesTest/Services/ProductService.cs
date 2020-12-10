@@ -2,17 +2,16 @@
 using System.Linq;
 using System.Threading.Tasks;
 using WooliesTest.Models;
-using WooliesTest.Repositories;
 
 namespace WooliesTest.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IDataRepository repository;
+        private readonly IRecommendedProductsService recommendedProductsService;
 
-        public ProductService(IDataRepository repository)
+        public ProductService(IRecommendedProductsService recommendedProductsService)
         {
-            this.repository = repository ?? throw new System.ArgumentNullException(nameof(repository));
+            this.recommendedProductsService = recommendedProductsService ?? throw new System.ArgumentNullException(nameof(recommendedProductsService));
         }
 
         public async Task<IEnumerable<Product>> SortAsync(IEnumerable<Product> products, ProductSortingOptions sortingOption)
@@ -39,47 +38,12 @@ namespace WooliesTest.Services
 
             if (sortingOption == ProductSortingOptions.Recommended)
             {
-                var shopperHistories = await repository.GetShopperHistoriesAsync();
-                return GetRecommendedProducts(products, shopperHistories);
+                return await recommendedProductsService.GetRecommendedProductsAsync(products);
             }
 
             return products;
         }
 
-        public static IEnumerable<Product> GetRecommendedProducts(IEnumerable<Product> products, IEnumerable<ShopperHistory> shopperHistories)
-        {
-            var productBuyFrequency = GetProductBuyFrequencyAsync(shopperHistories);
 
-            var recommendProducts = products.Select(p =>
-            {
-                return new RecommendProduct()
-                {
-                    Product = p,
-                    Popularity = productBuyFrequency.ContainsKey(p.Name) ? productBuyFrequency[p.Name] : 0
-                };
-            });
-
-            return recommendProducts.OrderByDescending(p => p.Popularity).Select(p => p.Product);
-        }
-
-        static Dictionary<string, int> GetProductBuyFrequencyAsync(IEnumerable<ShopperHistory> shopperHistories)
-        {
-            var history = new Dictionary<string, int>();
-
-            foreach (var shopperHistory in shopperHistories)
-            {
-                foreach (var product in shopperHistory.Products)
-                {
-                    if (!history.ContainsKey(product.Name))
-                    {
-                        history.Add(product.Name, 0);
-                    }
-
-                    history[product.Name]++;
-                }
-            }
-
-            return history;
-        }
     }
 }
