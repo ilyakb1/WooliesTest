@@ -45,10 +45,10 @@ namespace WooliesTest.Services
             }
             else
             {
-                logger.LogError($"Post to {url} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
+                string errorMessage = $"Post to {url} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}";
+                logger.LogError(errorMessage);
+                throw new ApiException(errorMessage);
             }
-
-            return null;
         }
     }
 }

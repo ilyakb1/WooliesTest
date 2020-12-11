@@ -1,15 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WooliesTest;
 using WooliesTest.Controllers;
 using WooliesTest.Models;
 using WooliesTest.Repositories;
 using WooliesTest.Services;
 using Xunit;
 
-namespace WooliesTestTests
+namespace WooliesTestTests.TestFiles
 {
     public class ProductControllerTests
     {
@@ -64,7 +65,11 @@ namespace WooliesTestTests
             var repository = new Mock<IDataRepository>();
             repository.Setup(r => r.GetProductsAsync()).Returns(Task.FromResult<IEnumerable<Product>>(products));
             repository.Setup(r => r.GetShopperHistoriesAsync()).Returns(Task.FromResult<IEnumerable<ShopperHistory>>(shopperHistories));
-            var productService = new ProductService(repository.Object);
+
+            var shopperHistoryService = new ShopperHistoryService(repository.Object);
+            var recommendedProductsService = new RecommendedProductsService(shopperHistoryService);
+            var productService = new ProductService(recommendedProductsService);
+
             Controller = new ProductController(repository.Object, productService);
         }
 
@@ -127,10 +132,42 @@ namespace WooliesTestTests
         public async Task GetProducts_SortOptionIsUnknow_BadRequest()
         {
             // Act
-            var result = await Controller.GetAsync("Unknown") as BadRequestResult;
+            var result = await Controller.GetAsync("Unknown");
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task GetProducts_ShopHistoryApiError_InternalServcerError()
+        {
+            var product1 = new Product()
+            {
+                Name = "Product 3",
+                Price = 40
+            };
+
+            var products = new List<Product> { product1 };
+
+            var shopperHistories = new List<ShopperHistory>
+               {
+                   new ShopperHistory()
+                   {
+                       CustomerId = 1,
+                       Products = new Product[]{ product1 }
+                   },
+            };
+
+            var repository = new Mock<IDataRepository>();
+            repository.Setup(r => r.GetProductsAsync()).Returns(Task.FromResult<IEnumerable<Product>>(products));
+            repository.Setup(r => r.GetShopperHistoriesAsync()).Throws(new ApiException("Error during call to ShopperHistories API"));
+            var shopperHistoryService = new ShopperHistoryService(repository.Object);
+            var recommendedProductsService = new RecommendedProductsService(shopperHistoryService);
+            var productService = new ProductService(recommendedProductsService);
+            var controller = new ProductController(repository.Object, productService);
+
+            var exception = await Assert.ThrowsAsync<ApiException>(async () => await controller.GetAsync("Recommended"));
+            Assert.Equal("Error during call to ShopperHistories API", exception.Message);
         }
     }
 }

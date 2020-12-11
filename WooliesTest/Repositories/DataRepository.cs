@@ -41,10 +41,10 @@ namespace WooliesTest.Repositories
             }
             else
             {
-                logger.LogError($"Get from {productApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
+                string errorMessage = $"Get from {productApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}";
+                logger.LogError(errorMessage);
+                throw new ApiException(errorMessage);
             }
-
-            return null;
         }
 
         public async Task<IEnumerable<ShopperHistory>> GetShopperHistoriesAsync()
@@ -59,10 +59,10 @@ namespace WooliesTest.Repositories
             }
             else
             {
-                logger.LogError($"Get from {shopperHistoryApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}");
+                string errorMessage = $"Get from {shopperHistoryApiUrl} return error with code '{response.StatusCode}' and message {response.ReasonPhrase}";
+                logger.LogError(errorMessage);
+                throw new ApiException(errorMessage);
             }
-
-            return null; ;
         }
     }
 }

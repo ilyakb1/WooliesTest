@@ -1,13 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
      <TargetFramework>net5.0</TargetFramework>
      <UserSecretsId>7b9df7bd-f75a-46a7-84dc-050d561a8102</UserSecretsId>
+     <OutputType>Exe</OutputType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="ProductControllerTests.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove="TestFiles\trolley1.json" />
@@ -15,13 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="ProductControllerTests.cs" />
     <EmbeddedResource Include="TestFiles\trolley1.json" />
     <EmbeddedResource Include="TestFiles\trolley2.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Moq" Version="4.15.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
